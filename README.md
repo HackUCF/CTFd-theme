@@ -52,8 +52,8 @@ settings still work.
 - **Default Tab:** All, or the first event.
 - **Default View:** board or list.
 - **Category Aliases:** one `From = To` per line, used to merge category names
-  that differ between years. For example, `RE = Reversing` merges 2025's "RE"
-  into "Reversing".
+  that differ between years. For example, `RE = Reversing` shows any "RE"
+  challenges under "Reversing".
 - **Challenge Order:** the core theme's custom sort function, still honored.
   It sets the "Default" sort order.
 - **Category Order:** the core theme's custom sort function, still honored.
