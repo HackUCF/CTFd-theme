@@ -5,16 +5,8 @@ import CTFd from "./index";
 import { Modal, Tab, Tooltip } from "bootstrap";
 import highlight from "./theme/highlight";
 import { intl } from "./theme/times";
-
-function addTargetBlank(html) {
-  let dom = new DOMParser();
-  let view = dom.parseFromString(html, "text/html");
-  let links = view.querySelectorAll('a[href*="://"]');
-  links.forEach(link => {
-    link.setAttribute("target", "_blank");
-  });
-  return view.documentElement.outerHTML;
-}
+import ChallengeBrowser from "./archive/browser";
+import { addTargetBlank } from "./utils/links";
 
 window.Alpine = Alpine;
 
@@ -22,6 +14,8 @@ Alpine.store("challenge", {
   data: {
     view: "",
   },
+  // The archive browser's parsed view of the open challenge (event, difficulty)
+  meta: null,
 });
 
 Alpine.data("Hint", () => ({
@@ -270,101 +264,6 @@ Alpine.data("Challenge", () => ({
   },
 }));
 
-Alpine.data("ChallengeBoard", () => ({
-  loaded: false,
-  challenges: [],
-  challenge: null,
-
-  async init() {
-    this.challenges = await CTFd.pages.challenges.getChallenges();
-    this.loaded = true;
-
-    if (window.location.hash) {
-      let chalHash = decodeURIComponent(window.location.hash.substring(1));
-      let idx = chalHash.lastIndexOf("-");
-      if (idx >= 0) {
-        let pieces = [chalHash.slice(0, idx), chalHash.slice(idx + 1)];
-        let id = pieces[1];
-        await this.loadChallenge(id);
-      }
-    }
-  },
-
-  getCategories() {
-    const categories = [];
-
-    this.challenges.forEach(challenge => {
-      const { category } = challenge;
-
-      if (!categories.includes(category)) {
-        categories.push(category);
-      }
-    });
-
-    try {
-      const f = CTFd.config.themeSettings.challenge_category_order;
-      if (f) {
-        const getSort = new Function(`return (${f})`);
-        categories.sort(getSort());
-      }
-    } catch (error) {
-      // Ignore errors with theme category sorting
-      console.log("Error running challenge_category_order function");
-      console.log(error);
-    }
-
-    return categories;
-  },
-
-  getChallenges(category) {
-    let challenges = this.challenges;
-
-    if (category !== null) {
-      challenges = this.challenges.filter(challenge => challenge.category === category);
-    }
-
-    try {
-      const f = CTFd.config.themeSettings.challenge_order;
-      if (f) {
-        const getSort = new Function(`return (${f})`);
-        challenges.sort(getSort());
-      }
-    } catch (error) {
-      // Ignore errors with theme challenge sorting
-      console.log("Error running challenge_order function");
-      console.log(error);
-    }
-
-    return challenges;
-  },
-
-  async loadChallenges() {
-    this.challenges = await CTFd.pages.challenges.getChallenges();
-  },
-
-  async loadChallenge(challengeId) {
-    await CTFd.pages.challenge.displayChallenge(challengeId, challenge => {
-      challenge.data.view = addTargetBlank(challenge.data.view);
-      Alpine.store("challenge").data = challenge.data;
-
-      // nextTick is required here because we're working in a callback
-      Alpine.nextTick(() => {
-        let modal = Modal.getOrCreateInstance("[x-ref='challengeWindow']");
-        // TODO: Get rid of this private attribute access
-        // See https://github.com/twbs/bootstrap/issues/31266
-        modal._element.addEventListener(
-          "hidden.bs.modal",
-          event => {
-            // Remove location hash
-            history.replaceState(null, null, " ");
-          },
-          { once: true },
-        );
-        modal.show();
-        history.replaceState(null, null, `#${challenge.data.name}-${challengeId}`);
-      });
-    });
-  },
-}));
+Alpine.data("ChallengeBrowser", ChallengeBrowser);
 
 Alpine.start();

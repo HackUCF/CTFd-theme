@@ -1,5 +1,5 @@
 {
-  "name": "core-beta",
+  "name": "hackucf-archive",
   "private": true,
   "version": "0.0.1",
   "scripts": {
@@ -7,7 +7,9 @@
     "build": "vite build",
     "format": "prettier --write assets/",
     "lint": "prettier --check assets/",
-    "verify": "vite build && git add -N -- static && git diff --exit-code -- static"
+    "verify": "vite build && git add -N -- static && git diff --exit-code -- static",
+    "test": "node --no-warnings --test",
+    "reload": "vite build && docker compose -f dev/compose.yml restart ctfd"
   },
   "dependencies": {
     "@ctfdio/ctfd-js": "^0.0.19",

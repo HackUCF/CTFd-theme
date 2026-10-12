@@ -1,0 +1,342 @@
+/* Archive challenge browser
+-------------------------------------------------- */
+
+[x-cloak] {
+  display: none !important;
+}
+
+.archive-jumbotron {
+  padding-bottom: 2rem !important;
+
+  .archive-totals {
+    color: var(--bs-secondary-color);
+  }
+}
+
+// Difficulty palette (shared by badges, dots and filters)
+$difficulty-colors: (
+  "beginner": #20c997,
+  "easy": #198754,
+  "medium": #e0a800,
+  "hard": #fd7e14,
+  "insane": #dc3545,
+  "unrated": #6c757d,
+);
+
+@each $key, $color in $difficulty-colors {
+  .difficulty-#{$key} {
+    --difficulty-color: #{$color};
+  }
+}
+
+.difficulty-badge {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 1rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--difficulty-color);
+  border: 1px solid var(--difficulty-color);
+  white-space: nowrap;
+}
+
+.difficulty-dot {
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  margin-right: 0.35rem;
+  border-radius: 50%;
+  background-color: var(--difficulty-color);
+}
+
+// Event tabs: one scrollable row of pills
+.event-tabs {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  border-bottom: 1px solid var(--bs-border-color);
+  padding-bottom: 0.75rem;
+
+  .nav-link {
+    white-space: nowrap;
+    color: var(--bs-body-color);
+    font-weight: 500;
+
+    &:hover:not(.active) {
+      background-color: var(--bs-tertiary-bg);
+    }
+  }
+
+  .event-progress {
+    margin-left: 0.35rem;
+    font-size: 0.75em;
+    opacity: 0.7;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .event-complete:not(.active) .event-progress {
+    color: var(--bs-success);
+    opacity: 1;
+  }
+}
+
+// Sidebar filters
+.archive-filters {
+  @media (min-width: 992px) {
+    position: sticky;
+    top: 5rem;
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+    padding-right: 0.25rem;
+  }
+
+  .filter-heading {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0.5rem;
+  }
+
+  .filter-option {
+    display: flex;
+    align-items: center;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      background-color: var(--bs-tertiary-bg);
+    }
+
+    .form-check-input {
+      margin-top: 0;
+    }
+  }
+
+  .filter-count {
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .search-hint {
+    position: absolute;
+    right: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    opacity: 0.5;
+    font-size: 0.7rem;
+  }
+
+  .btn-group .btn {
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
+  }
+}
+
+.archive-toolbar .form-select {
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.25rem !important;
+  padding-right: 2rem !important;
+}
+
+// Collapsible group headers
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem 0;
+  margin-bottom: 0.75rem;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--bs-border-color);
+  color: inherit;
+  text-align: left;
+
+  .group-chevron {
+    font-size: 0.8rem;
+    transition: transform 0.15s ease;
+
+    &.collapsed {
+      transform: rotate(-90deg);
+    }
+  }
+
+  .group-progress {
+    font-size: 0.85rem;
+    color: var(--bs-secondary-color);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .group-bar {
+    flex: 0 0 6rem;
+    height: 0.3rem;
+    margin-left: auto;
+    border-radius: 1rem;
+    background-color: var(--bs-tertiary-bg);
+    overflow: hidden;
+
+    span {
+      display: block;
+      height: 100%;
+      background-color: var(--bs-success);
+    }
+  }
+}
+
+// Compact challenge cards
+.challenge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+  gap: 0.75rem;
+
+  @media (max-width: 575.98px) {
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: 0.5rem;
+  }
+}
+
+.challenge-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 6.5rem;
+  padding: 0.7rem 0.8rem;
+  text-align: left;
+  border: 1px solid var(--bs-border-color);
+  border-left: 4px solid var(--bs-border-color);
+  border-radius: 0.4rem;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.15);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+  }
+
+  .card-event {
+    padding: 0 0.35rem;
+    border-radius: 0.2rem;
+    background-color: var(--bs-tertiary-bg);
+  }
+
+  .card-check {
+    margin-left: auto;
+    font-size: 0.95rem;
+  }
+
+  .card-name {
+    font-weight: 600;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: auto;
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .card-value {
+    font-weight: 600;
+    color: var(--bs-body-color);
+  }
+
+  &.challenge-solved {
+    border-left-color: var(--bs-success);
+    background-color: rgba(var(--bs-success-rgb), 0.12);
+
+    .card-check {
+      color: var(--bs-success);
+    }
+  }
+
+  &.challenge-locked {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+[data-bs-theme="dark"] .challenge-card {
+  background-color: var(--bs-gray-dark);
+
+  &.challenge-solved {
+    background-color: rgba(var(--bs-success-rgb), 0.22);
+  }
+}
+
+// List view
+.challenge-table {
+  font-size: 0.925rem;
+
+  // Override the global centered-cells table style
+  tr > :not(:first-child) {
+    text-align: left;
+  }
+
+  tr > .text-end:not(:first-child) {
+    text-align: right;
+  }
+
+  > tbody > tr > td {
+    padding: 0.55rem 0.75rem;
+  }
+
+  .col-status {
+    width: 2rem;
+  }
+
+  .sort-header {
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    cursor: pointer;
+  }
+
+  tr.challenge-solved td {
+    background-color: rgba(var(--bs-success-rgb), 0.08);
+  }
+
+  tr.challenge-locked {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+// Challenge modal context line
+.challenge-context {
+  font-size: 0.85rem;
+  color: var(--bs-secondary-color);
+  padding-bottom: 0.5rem;
+}

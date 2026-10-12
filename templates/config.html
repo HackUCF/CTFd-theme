@@ -3,7 +3,7 @@
     <label>Challenge Window Size</label>
     <select class="form-control custom-select" name="challenge_window_size">
         <option value="sm">Small</option>
-        <option value="norm">Normal</option>
+        <option value="norm" selected>Normal</option>
         <option value="lg">Large</option>
         <option value="xl">Extra Large</option>
     </select>
@@ -29,6 +29,72 @@
       </small>
     </label>
     <textarea class="form-control text-monospace" name="challenge_order" rows="5"></textarea>
+  </div>
+
+  <h5 class="mt-4">Archive challenge browser</h5>
+
+  <div class="form-group">
+    <label>
+      Event Name Template<br>
+      <small class="form-text text-muted">
+        Label for challenges tagged with a year (e.g. <code>2019</code>). <code>{year}</code> is replaced with the tag.
+        Challenges tagged <code>event:&lt;name&gt;</code> use that name instead.
+      </small>
+    </label>
+    <input type="text" class="form-control" name="event_name_template" placeholder="SunshineCTF {year}">
+  </div>
+
+  <div class="form-group">
+    <label>
+      Originals Label<br>
+      <small class="form-text text-muted">Tab name for challenges with no year or <code>event:</code> tag.</small>
+    </label>
+    <input type="text" class="form-control" name="originals_label" placeholder="Hack@UCF Originals">
+  </div>
+
+  <div class="form-group">
+    <label>Event Tab Order</label>
+    <select class="form-control custom-select" name="event_order">
+      <option value="newest">Newest first</option>
+      <option value="oldest">Oldest first</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Originals Tab Position</label>
+    <select class="form-control custom-select" name="originals_position">
+      <option value="last">After the events</option>
+      <option value="first">Before the events</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Default Tab</label>
+    <select class="form-control custom-select" name="default_event">
+      <option value="all">All challenges</option>
+      <option value="newest">First event tab</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>
+      Default View<br>
+      <small class="form-text text-muted">Players' own choice is remembered in their browser.</small>
+    </label>
+    <select class="form-control custom-select" name="default_view">
+      <option value="board">Board (cards)</option>
+      <option value="list">List (table)</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>
+      Category Aliases<br>
+      <small class="form-text text-muted">
+        One <code>From = To</code> per line to merge category names across events, e.g. <code>RE = Reversing</code>.
+      </small>
+    </label>
+    <textarea class="form-control text-monospace" name="category_aliases" rows="3" placeholder="RE = Reversing"></textarea>
   </div>
 
   <div>

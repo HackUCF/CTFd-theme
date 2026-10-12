@@ -55,10 +55,31 @@
             </h3>
 
 
-            {% if tags %}
+            {# Event/difficulty come from the archive browser's parsed tags #}
+            <div class="challenge-context text-center" x-data x-show="$store.challenge.meta" x-cloak>
+              <span x-text="$store.challenge.meta?.category"></span>
+              <span class="mx-1 opacity-50">&middot;</span>
+              <span x-text="$store.challenge.meta?.eventLabel"></span>
+              <template x-if="$store.challenge.meta?.difficulty">
+                <span
+                  class="difficulty-badge ms-2" :class="`difficulty-${$store.challenge.meta.difficulty.key}`"
+                  x-text="$store.challenge.meta.difficulty.label"
+                ></span>
+              </template>
+            </div>
+
+            {# Hide the tags the archive browser consumes (year, event:, difficulty:) #}
+            {% set tag_ns = namespace(shown=[]) %}
+            {% for tag in tags or [] %}
+              {% set low = tag | lower %}
+              {% if not (tag | length == 4 and tag.isdigit()) and not low.startswith("event:") and not low.startswith("difficulty:") %}
+                {% set tag_ns.shown = tag_ns.shown + [tag] %}
+              {% endif %}
+            {% endfor %}
+            {% if tag_ns.shown %}
               <div class="challenge-tags text-center pt-2 pb-3">
                 {% block tags %}
-                  {% for tag in tags %}
+                  {% for tag in tag_ns.shown %}
                     <span class="challenge-tag badge bg-info">{{ tag }}</span>
                   {% endfor %}
                 {% endblock %}

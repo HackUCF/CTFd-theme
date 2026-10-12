@@ -1,29 +1,35 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="jumbotron">
-    <div class="container">
-      <h1>
-        {% trans %}Challenges{% endtrans %}
-      </h1>
-    </div>
-  </div>
-
-  <div class="container">
-    <div class="row">
-      <div class="col-md-12">
-        {% include "components/errors.html" %}
+  <div
+    class="archive-browser"
+    x-data="ChallengeBrowser"
+    @load-challenges.window="loadChallenges()"
+    @load-challenge.window="loadChallenge($event.detail)"
+  >
+    <div class="jumbotron archive-jumbotron">
+      <div class="container-xxl">
+        <h1>{% trans %}Challenges{% endtrans %}</h1>
+        <p class="archive-totals mb-0" x-show="loaded" x-cloak>
+          <span x-text="totals.total"></span> challenges
+          <span class="mx-2 opacity-50">&middot;</span>
+          <span x-text="totals.solved"></span> solved
+          <span class="mx-2 opacity-50">&middot;</span>
+          <span x-text="totals.points"></span> points
+        </p>
       </div>
     </div>
 
-    <div 
-      x-data="ChallengeBoard" 
-      @load-challenges.window="loadChallenges()" 
-      @load-challenge.window="loadChallenge($event.detail)"
-    >
+    <div class="container-xxl">
+      <div class="row">
+        <div class="col-md-12">
+          {% include "components/errors.html" %}
+        </div>
+      </div>
+
       <div
-          x-ref="challengeWindow" id="challenge-window" class="modal fade" tabindex="-1" role="dialog" x-data=""
-          x-html="$store.challenge.data.view"
+        x-ref="challengeWindow" id="challenge-window" class="modal fade" tabindex="-1" role="dialog" x-data=""
+        x-html="$store.challenge.data.view"
       ></div>
 
       <div x-show="!loaded">
@@ -34,37 +40,280 @@
         </div>
       </div>
 
-      <div x-show="loaded">
-        <template x-for="(category, idx) in getCategories()" :key="idx">
-          <div class="pt-5">
-            <div class="category-header mb-3">
-              <h3 x-text="category"></h3>
+      <div x-show="loaded" x-cloak>
+        {# Event tabs #}
+        <nav class="event-tabs mb-4" aria-label="Events">
+          <ul class="nav nav-pills flex-nowrap">
+            <li class="nav-item">
+              <button
+                type="button" class="nav-link" :class="filters.event === 'all' ? 'active' : ''"
+                @click="selectEvent('all')"
+              >
+                All
+                <span class="event-progress" x-text="`${totals.solved}/${totals.total}`"></span>
+              </button>
+            </li>
+            <template x-for="e in events" :key="e.key">
+              <li class="nav-item">
+                <button
+                  type="button" class="nav-link" :class="[filters.event === e.key ? 'active' : '', e.solved === e.total ? 'event-complete' : '']"
+                  @click="selectEvent(e.key)" :title="e.label"
+                >
+                  <span x-text="e.year && e.key === String(e.year) ? e.year : e.label"></span>
+                  <span class="event-progress" x-text="`${e.solved}/${e.total}`"></span>
+                </button>
+              </li>
+            </template>
+          </ul>
+        </nav>
+
+        <div class="row">
+          {# Filter sidebar #}
+          <aside class="col-lg-3 mb-4">
+            <div class="d-flex d-lg-none gap-2 mb-3">
+              <button type="button" class="btn btn-outline-secondary flex-grow-1" @click="showFilters = !showFilters">
+                <i class="fas fa-filter me-1"></i> Filters
+                <span class="badge text-bg-primary ms-1" x-show="activeFilterCount" x-text="activeFilterCount"></span>
+              </button>
             </div>
 
-            <div class="category-challenges d-flex flex-column">
-              <div class="challenges-row row">
-                <template x-for="(c, idx) in getChallenges(category)" :key="c.id">
-                  <div class="col-sm-6 col-md-4 col-lg-3 my-3">
-                    <button
-                        class="challenge-button btn btn-dark w-100 h-100"
-                        :class="[
-                          c.solved_by_me ? 'challenge-solved' : '',
-                          ...c.tags.map((tag) => `tag-${tag.value.replace(/ /g, '-')}`),
-                        ];"
-                        :value="c.id" @click="loadChallenge(c.id)"
-                    >
+            <div class="archive-filters" :class="showFilters ? 'd-block' : 'd-none d-lg-block'">
+              <div class="mb-4">
+                <label for="archive-search" class="form-label filter-heading">Search</label>
+                <div class="position-relative">
+                  <input
+                    id="archive-search" x-ref="search" type="search" class="form-control" placeholder="Name, category, tag..."
+                    x-model.debounce.150ms="filters.q" autocomplete="off"
+                    @keydown.escape="filters.q = ''; $el.blur()"
+                  >
+                  <kbd class="search-hint" x-show="!filters.q" title="Press / to search">/</kbd>
+                </div>
+              </div>
 
-                      <div class="challenge-inner my-3">
-                        <p x-text="c.name"></p>
-                        <span x-text="c.value"></span>
-                      </div>
+              <div class="mb-4">
+                <div class="filter-heading">Status</div>
+                <div class="btn-group w-100" role="group" aria-label="Status">
+                  <template x-for="s in ['all', 'unsolved', 'solved']" :key="s">
+                    <button
+                      type="button" class="btn btn-sm btn-outline-secondary text-capitalize"
+                      :class="filters.status === s ? 'active' : ''" @click="filters.status = s"
+                    >
+                      <span x-text="s"></span>
+                      <span class="opacity-75" x-text="`(${statusCounts[s]})`"></span>
                     </button>
+                  </template>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <div class="filter-heading d-flex justify-content-between">
+                  <span>Category</span>
+                  <button
+                    type="button" class="btn btn-link btn-sm p-0" x-show="filters.categories.length"
+                    @click="filters.categories = []"
+                  >Clear</button>
+                </div>
+                <div class="filter-options">
+                  <template x-for="cat in categories" :key="cat.name">
+                    <label class="filter-option" :class="!cat.count && !isSelected('categories', cat.name) ? 'opacity-50' : ''">
+                      <input
+                        type="checkbox" class="form-check-input me-2" :checked="isSelected('categories',  cat.name)"
+                        @change="toggle('categories', cat.name)"
+                      >
+                      <span class="flex-grow-1" x-text="cat.name"></span>
+                      <span class="filter-count" x-text="cat.count"></span>
+                    </label>
+                  </template>
+                </div>
+              </div>
+
+              <div class="mb-4" x-show="difficulties.length">
+                <div class="filter-heading d-flex justify-content-between">
+                  <span>Difficulty</span>
+                  <button
+                    type="button" class="btn btn-link btn-sm p-0" x-show="filters.difficulties.length"
+                    @click="filters.difficulties = []"
+                  >Clear</button>
+                </div>
+                <div class="filter-options">
+                  <template x-for="d in difficulties" :key="d.level">
+                    <label class="filter-option" :class="!d.count && !isSelected('difficulties', d.level) ? 'opacity-50' : ''">
+                      <input
+                        type="checkbox" class="form-check-input me-2" :checked="isSelected('difficulties',  d.level)"
+                        @change="toggle('difficulties', d.level)"
+                      >
+                      <span class="flex-grow-1">
+                        <span class="difficulty-dot" :class="`difficulty-${d.key}`"></span>
+                        <span x-text="d.label"></span>
+                      </span>
+                      <span class="filter-count" x-text="d.count"></span>
+                    </label>
+                  </template>
+                </div>
+              </div>
+
+              <button
+                type="button" class="btn btn-sm btn-outline-secondary w-100" x-show="activeFilterCount"
+                @click="clearFilters()"
+              >
+                <i class="fas fa-xmark me-1"></i> Clear all filters
+              </button>
+            </div>
+          </aside>
+
+          {# Results #}
+          <section class="col-lg-9">
+            <div class="archive-toolbar d-flex flex-wrap align-items-center gap-2 mb-3">
+              <div class="me-auto">
+                <strong x-text="visible.length"></strong>
+                <span x-text="visible.length === 1 ? 'challenge' : 'challenges'"></span>
+                <template x-if="currentEvent">
+                  <span>in <span x-text="currentEvent.label"></span></span>
+                </template>
+              </div>
+
+              <button
+                type="button" class="btn btn-sm btn-outline-secondary" @click="randomUnsolved()"
+                title="Open a random unsolved challenge from this list"
+                :disabled="!visible.some(c => !c.solved_by_me && !c.locked)"
+              >
+                <i class="fas fa-shuffle"></i><span class="d-none d-sm-inline ms-1">Random</span>
+              </button>
+
+              <select class="form-select form-select-sm w-auto" x-model="sort" aria-label="Sort by">
+                <template x-for="s in sorts" :key="s.key">
+                  <option :value="s.key" x-text="`Sort: ${s.label}`" :selected="s.key === sort"></option>
+                </template>
+              </select>
+
+              <select class="form-select form-select-sm w-auto" x-model="groupBy" aria-label="Group by" x-show="view === 'board'">
+                <option value="auto">Group: Auto</option>
+                <option value="event">Group: Event</option>
+                <option value="category">Group: Category</option>
+                <option value="difficulty">Group: Difficulty</option>
+                <option value="none">Group: None</option>
+              </select>
+
+              <div class="btn-group btn-group-sm" role="group" aria-label="View">
+                <button
+                  type="button" class="btn btn-outline-secondary" :class="view === 'board' ? 'active' : ''"
+                  @click="view = 'board'" title="Board view"
+                ><i class="fas fa-grip"></i></button>
+                <button
+                  type="button" class="btn btn-outline-secondary" :class="view === 'list' ? 'active' : ''"
+                  @click="view = 'list'" title="List view"
+                ><i class="fas fa-list"></i></button>
+              </div>
+            </div>
+
+            <div x-show="!visible.length" class="text-center text-muted py-5">
+              <i class="fas fa-magnifying-glass fa-2x mb-3 opacity-50"></i>
+              <p>No challenges match these filters.</p>
+              <button type="button" class="btn btn-sm btn-outline-secondary" @click="clearFilters()">Clear filters</button>
+            </div>
+
+            {# Board view #}
+            <template x-if="view === 'board'">
+              <div>
+                <div class="text-end small mb-1" x-show="groups.length > 1">
+                  <button type="button" class="btn btn-link btn-sm p-0 me-2" @click="setAllCollapsed(false)">Expand all</button>
+                  <button type="button" class="btn btn-link btn-sm p-0" @click="setAllCollapsed(true)">Collapse all</button>
+                </div>
+                <template x-for="group in groups" :key="groupId(group)">
+                  <div class="challenge-group mb-4">
+                    <template x-if="group.label">
+                      <button
+                        type="button" class="group-header" @click="toggleGroup(group)"
+                        :aria-expanded="!isCollapsed(group)"
+                      >
+                        <i class="fas fa-chevron-down group-chevron" :class="isCollapsed(group) ? 'collapsed' : ''"></i>
+                        <h3 class="h5 mb-0" x-text="group.label"></h3>
+                        <span class="group-progress" x-text="`${group.solved}/${group.challenges.length}`"></span>
+                        <span class="group-bar">
+                          <span :style="`width: ${100 * group.solved / group.challenges.length}%`"></span>
+                        </span>
+                      </button>
+                    </template>
+                    <div class="challenge-grid" x-show="!isCollapsed(group)">
+                      <template x-for="c in group.challenges" :key="c.id">
+                        <button
+                          type="button" class="challenge-card"
+                          :class="[c.solved_by_me ? 'challenge-solved' : '', c.locked ? 'challenge-locked' : '',
+                            ...c.tags.map((tag) => `tag-${String(tag.value).replace(/ /g, '-')}`),
+                          ]"
+                          :value="c.id" @click="!c.locked && loadChallenge(c.id)" :disabled="c.locked"
+                        >
+                          <span class="card-top">
+                            <span class="card-category" x-show="effectiveGroup !== 'category'" x-text="c.category"></span>
+                            <span class="card-event" x-show="showEventOnCards" x-text="shortEvent(c)"></span>
+                            <i class="fas fa-circle-check card-check" x-show="c.solved_by_me"></i>
+                            <i class="fas fa-lock card-check" x-show="c.locked"></i>
+                          </span>
+                          <span class="card-name" x-text="c.name"></span>
+                          <span class="card-meta">
+                            <span class="card-value"><span x-text="c.value"></span> pts</span>
+                            <span class="card-solves" x-show="c.solves !== null" :title="`${c.solves} solves`">
+                              <i class="fas fa-user-check"></i> <span x-text="c.solves"></span>
+                            </span>
+                            <span
+                              class="difficulty-badge" x-show="c.difficulty" :class="difficultyClass(c.difficulty)"
+                              x-text="c.difficulty && c.difficulty.label"
+                            ></span>
+                          </span>
+                        </button>
+                      </template>
+                    </div>
                   </div>
                 </template>
               </div>
-            </div>
-          </div>
-        </template>
+            </template>
+
+            {# List view #}
+            <template x-if="view === 'list'">
+              <div class="table-responsive" x-show="visible.length">
+                <table class="table table-hover align-middle challenge-table">
+                  <thead>
+                    <tr>
+                      <th class="col-status"><span class="visually-hidden">Status</span></th>
+                      <th><button type="button" class="sort-header" @click="setSort('name')">Name <i class="fas" :class="sortIcon('name')"></i></button></th>
+                      <th x-show="filters.event === 'all'"><button type="button" class="sort-header" @click="setSort('event')">Event <i class="fas" :class="sortIcon('event')"></i></button></th>
+                      <th><button type="button" class="sort-header" @click="setSort('category')">Category <i class="fas" :class="sortIcon('category')"></i></button></th>
+                      <th x-show="difficulties.length"><button type="button" class="sort-header" @click="setSort('difficulty')">Difficulty <i class="fas" :class="sortIcon('difficulty')"></i></button></th>
+                      <th class="text-end"><button type="button" class="sort-header" @click="setSort('value')">Points <i class="fas" :class="sortIcon('value')"></i></button></th>
+                      <th class="text-end"><button type="button" class="sort-header" @click="setSort('solves')">Solves <i class="fas" :class="sortIcon('solves')"></i></button></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template x-for="c in visible" :key="c.id">
+                      <tr
+                        :class="[c.solved_by_me ? 'challenge-solved' : '', c.locked ? 'challenge-locked' : '']"
+                        @click="!c.locked && loadChallenge(c.id)" tabindex="0" @keydown.enter="!c.locked && loadChallenge(c.id)"
+                      >
+                        <td class="col-status">
+                          <i class="fas fa-circle-check text-success" x-show="c.solved_by_me"></i>
+                          <i class="fas fa-lock text-muted" x-show="c.locked"></i>
+                        </td>
+                        <td>
+                          <span class="fw-semibold" x-text="c.name"></span>
+                          <template x-for="t in c.displayTags" :key="t">
+                            <span class="badge rounded-pill text-bg-secondary ms-1 fw-normal" x-text="t"></span>
+                          </template>
+                        </td>
+                        <td x-show="filters.event === 'all'" class="text-nowrap" x-text="c.eventLabel"></td>
+                        <td x-text="c.category"></td>
+                        <td x-show="difficulties.length">
+                          <span class="difficulty-badge" x-show="c.difficulty" :class="difficultyClass(c.difficulty)" x-text="c.difficulty && c.difficulty.label"></span>
+                        </td>
+                        <td class="text-end" x-text="c.value"></td>
+                        <td class="text-end" x-text="c.solves ?? ''"></td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </template>
+          </section>
+        </div>
       </div>
     </div>
   </div>
