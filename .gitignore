@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Dev CTFd credentials
+dev/.env
+__pycache__/

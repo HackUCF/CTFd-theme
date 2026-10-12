@@ -1,0 +1,36 @@
+# Local CTFd for developing/testing this theme. The theme directory is mounted
+# live as CTFd/themes/archive, so template edits show up on reload and asset
+# changes after `yarn build` (or `yarn dev` for watch mode).
+#
+#   docker compose -f dev/compose.yml up -d
+#   python3 dev/setup.py          # first run: admin account + theme + API token
+#
+# Data (sqlite DB + uploads) lives in the ctfd-data volume; `down -v` resets it.
+name: ctfd-theme-dev
+
+services:
+  ctfd:
+    image: ${CTFD_IMAGE:-ctfd/ctfd:3.8.8}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${CTFD_PORT:-8000}:8000"
+    environment:
+      - SECRET_KEY=theme-dev-not-secret
+      # /var/uploads is the only image path owned by the ctfd user, so the
+      # volume keeps the sqlite DB there too
+      - DATABASE_URL=sqlite:////var/uploads/ctfd.db
+      - UPLOAD_FOLDER=/var/uploads
+      - WORKERS=1
+      - ACCESS_LOG=-
+      - ERROR_LOG=-
+    # CTFd memoizes the theme's static/manifest.json in its cache. Keeping the
+    # filesystem cache on tmpfs means `yarn reload` (build + restart) picks up
+    # new asset hashes. Template edits need no restart.
+    tmpfs:
+      - /opt/CTFd/.data:uid=1001,gid=1001
+    volumes:
+      - ctfd-data:/var/uploads
+      - ..:/opt/CTFd/CTFd/themes/archive:ro
+
+volumes:
+  ctfd-data:
