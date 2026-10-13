@@ -6,6 +6,15 @@
 #   python3 dev/setup.py          # first run: admin account + theme + API token
 #
 # Data (sqlite DB + uploads) lives in the ctfd-data volume; `down -v` resets it.
+#
+# To stage a real CTFd export (CTFd can't import into sqlite), use MariaDB like
+# production instead:
+#
+#   export COMPOSE_PROFILES=mariadb
+#   export CTFD_DATABASE_URL=mysql+pymysql://ctfd:ctfd@db/ctfd
+#   docker compose -f dev/compose.yml up -d
+#   docker cp export.zip ctfd-theme-dev-ctfd-1:/tmp/export.zip
+#   docker exec ctfd-theme-dev-ctfd-1 python manage.py import_ctf /tmp/export.zip
 name: ctfd-theme-dev
 
 services:
@@ -18,7 +27,7 @@ services:
       - SECRET_KEY=theme-dev-not-secret
       # /var/uploads is the only image path owned by the ctfd user, so the
       # volume keeps the sqlite DB there too
-      - DATABASE_URL=sqlite:////var/uploads/ctfd.db
+      - DATABASE_URL=${CTFD_DATABASE_URL:-sqlite:////var/uploads/ctfd.db}
       - UPLOAD_FOLDER=/var/uploads
       - WORKERS=1
       - ACCESS_LOG=-
@@ -32,5 +41,19 @@ services:
       - ctfd-data:/var/uploads
       - ..:/opt/CTFd/CTFd/themes/archive:ro
 
+  db:
+    image: mariadb:10.11
+    profiles: [mariadb]
+    restart: unless-stopped
+    command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --wait_timeout=28800, --log-warnings=0]
+    environment:
+      - MARIADB_ROOT_PASSWORD=ctfd
+      - MARIADB_USER=ctfd
+      - MARIADB_PASSWORD=ctfd
+      - MARIADB_DATABASE=ctfd
+    volumes:
+      - ctfd-db:/var/lib/mysql
+
 volumes:
   ctfd-data:
+  ctfd-db:
