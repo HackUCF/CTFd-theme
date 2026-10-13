@@ -49,6 +49,8 @@ export const MINI_CATEGORIES = {
 // naming sorts right after Pwn.
 export const DEFAULT_CATEGORY_ORDER = [
   "Pwn",
+  // mini-pwn sub-categories sort immediately after Pwn
+  ...Object.values(MINI_CATEGORIES),
   "RE",
   "Reversing",
   "Web",

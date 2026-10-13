@@ -211,7 +211,7 @@ test("enrich pulls speedrun/i95 tags into a mini category", () => {
   assert.equal(i95.originalCategory, "Pwn");
 });
 
-test("default category order: Pwn, RE/Reversing, Web, Crypto, Forensics, Scripting, then rest", () => {
+test("default category order: Pwn, mini-pwn, RE/Reversing, Web, Crypto, Forensics, Scripting, then rest", () => {
   const cats = [
     "Misc",
     "Web",
@@ -226,15 +226,16 @@ test("default category order: Pwn, RE/Reversing, Web, Crypto, Forensics, Scripti
   ];
   assert.deepEqual(sortCategories(cats), [
     "Pwn",
+    // mini-pwn categories rank right after Pwn
+    "Speedrun (Mini Pwn)",
+    "I95 (Mini Pwn)",
     "Reversing",
     "Web",
     "Crypto",
     "Forensics",
     "Scripting",
     // the rest, alphabetical:
-    "I95 (Mini Pwn)",
     "Misc",
-    "Speedrun (Mini Pwn)",
     "Stego",
   ]);
   // "RE" sorts in the same slot as "Reversing" (right after Pwn)
