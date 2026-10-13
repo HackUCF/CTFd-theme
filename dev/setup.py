@@ -93,7 +93,7 @@ def main():
             "score_visibility": "public",
             "registration_visibility": "public",
             "verify_emails": "false",
-            "ctf_theme": "archive",
+            "ctf_theme": "hackucf",
             "start": "",
             "end": "",
             "nonce": c.nonce,
@@ -102,7 +102,7 @@ def main():
         status, text, final = c.request("POST", "/setup", data=form)
         if final.rstrip("/").endswith("/setup"):
             sys.exit(f"setup failed (HTTP {status})")
-        print("CTFd setup complete (theme: archive)")
+        print("CTFd setup complete (theme: hackucf)")
     else:
         print("CTFd already set up; logging in")
         c.login(ADMIN["name"], ADMIN["password"])

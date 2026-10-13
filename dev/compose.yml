@@ -1,5 +1,5 @@
 # Local CTFd for developing/testing this theme. The theme directory is mounted
-# live as CTFd/themes/archive, so template edits show up on reload and asset
+# live as CTFd/themes/hackucf, so template edits show up on reload and asset
 # changes after `yarn build` (or `yarn dev` for watch mode).
 #
 #   docker compose -f dev/compose.yml up -d
@@ -44,7 +44,7 @@ services:
       - /opt/CTFd/.data:uid=1001,gid=1001
     volumes:
       - ctfd-data:/var/uploads
-      - ..:/opt/CTFd/CTFd/themes/archive:ro
+      - ..:/opt/CTFd/CTFd/themes/hackucf:ro
 
   web:
     image: nginx:1.27-alpine

@@ -76,12 +76,12 @@ settings still work.
 
 CTFd loads themes from `CTFd/themes/<name>/`, and the built `static/` directory
 is committed. Copy or mount this repo there, for example as
-`CTFd/themes/archive`, then select it under Admin → Config → Theme. With the
+`CTFd/themes/hackucf`, then select it under Admin → Config → Theme. With the
 official Docker image:
 
 ```yaml
 volumes:
-  - ./theme:/opt/CTFd/CTFd/themes/archive:ro
+  - ./theme:/opt/CTFd/CTFd/themes/hackucf:ro
 ```
 
 ## Development
@@ -94,7 +94,7 @@ yarn lint         # prettier
 ```
 
 `dev/` runs a disposable local CTFd (official `ctfd/ctfd:3.8.8` image) with
-this repo mounted as the `archive` theme:
+this repo mounted as the `hackucf` theme:
 
 ```bash
 docker compose -f dev/compose.yml up -d    # http://127.0.0.1:8000
