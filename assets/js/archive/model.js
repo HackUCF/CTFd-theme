@@ -5,28 +5,30 @@
 // Tag conventions (all optional):
 //   "2017"               event = event_name_template with {year} = 2017
 //   "event:<name>"       event = <name> (overrides a year tag for the label)
-//   "difficulty:<level>" difficulty, where <level> is a name in DIFFICULTIES
-//                        ("easy", "hard", ...) or a number 1-5
+//   "<level>"            difficulty, where <level> is a key in DIFFICULTIES
+//                        ("beginner", "intermediate" or "expert")
+//   "difficulty:<level>" the same, also accepting a number 1-3 or an alias
+//                        ("easy", "hard", ...)
 // A challenge with no year or event tag belongs to the "originals" event.
 // Tags consumed by these conventions are hidden from the tag chips.
 
 export const DIFFICULTIES = [
   { level: 1, key: "beginner", label: "Beginner" },
-  { level: 2, key: "easy", label: "Easy" },
-  { level: 3, key: "medium", label: "Medium" },
-  { level: 4, key: "hard", label: "Hard" },
-  { level: 5, key: "insane", label: "Insane" },
+  { level: 2, key: "intermediate", label: "Intermediate" },
+  { level: 3, key: "expert", label: "Expert" },
 ];
 
 const DIFFICULTY_ALIASES = {
   baby: 1,
   intro: 1,
   introductory: 1,
-  normal: 3,
-  intermediate: 3,
-  difficult: 4,
-  expert: 5,
-  extreme: 5,
+  easy: 1,
+  normal: 2,
+  medium: 2,
+  hard: 3,
+  difficult: 3,
+  insane: 3,
+  extreme: 3,
 };
 
 export const ORIGINALS_KEY = "originals";
@@ -106,7 +108,7 @@ export function parseDifficulty(value) {
   if (!v) {
     return null;
   }
-  if (/^[1-5]$/.test(v)) {
+  if (/^[1-3]$/.test(v)) {
     return DIFFICULTIES[Number(v) - 1];
   }
   const found = DIFFICULTIES.find(d => d.key === v);
@@ -142,6 +144,8 @@ export function enrich(chal, settings) {
       eventName = tag.slice(6).trim() || eventName;
     } else if (lower.startsWith("difficulty:")) {
       difficulty = parseDifficulty(tag.slice(11)) || difficulty;
+    } else if (DIFFICULTIES.some(d => d.key === lower)) {
+      difficulty = parseDifficulty(lower);
     } else {
       tags.push(tag);
     }

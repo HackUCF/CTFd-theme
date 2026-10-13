@@ -32,12 +32,13 @@ is needed:
 | --- | --- |
 | `2019` | Belongs to event "SunshineCTF 2019". The name template is a theme setting. |
 | `event:<name>` | Belongs to the event `<name>`, which also gets its own tab. Use this for events that aren't a SunshineCTF year. |
-| `difficulty:<level>` | `beginner`, `easy`, `medium`, `hard`, or `insane` (or `1`-`5`). Difficulty filters appear once any challenge has one. |
+| `beginner`, `intermediate`, `expert` | Difficulty. `difficulty:<level>` also works, with `1`-`3` or an alias like `easy`, `medium` or `hard`. Difficulty filters appear once any challenge has one. |
 | *(no year or `event:` tag)* | Goes to the "Hack@UCF Originals" tab. |
 
 The challenge cards and modal hide these tags. Any other tags show as normal
 tags. The SunshineCTF archive's `challenge.yml` files already carry the year
-tag. Add a `difficulty:` tag in a challenge's `tags:` list to rate it.
+tag and a `beginner`, `intermediate` or `expert` tag, as do the Hack@UCF
+originals.
 
 ## Theme settings
 
@@ -87,13 +88,13 @@ this repo mounted as the `archive` theme:
 docker compose -f dev/compose.yml up -d    # http://127.0.0.1:8000
 python3 dev/setup.py                       # setup wizard + admin token -> dev/.env
 . dev/.env
-(cd ../sun && ctf challenge install)       # load the SunshineCTF archive with ctfcli
+(cd ../challenges/sun && ctf challenge install)      # the SunshineCTF archive
+(cd ../challenges/hackucf && ctf challenge install)  # the Hack@UCF originals
 python3 dev/demo.py                        # optional FAKE data: see below
 ```
 
-`dev/demo.py` exists only to exercise the UI. It adds placeholder "original"
-challenges and **made-up** `difficulty:` tags based on a hash of each
-challenge's name. It also creates player accounts with random solves. Logins
+`dev/demo.py` exists only to exercise the UI. It creates player accounts with
+**random** solves, so solve counts and solved states have something to show. Logins
 are `admin` / `admin-password-dev` and `player` / `player-password-dev`. To
 reset everything, run `docker compose -f dev/compose.yml down -v`.
 

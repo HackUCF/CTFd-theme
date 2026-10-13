@@ -68,11 +68,11 @@
               </template>
             </div>
 
-            {# Hide the tags the archive browser consumes (year, event:, difficulty:) #}
+            {# Hide the tags the archive browser consumes (year, event:, difficulty) #}
             {% set tag_ns = namespace(shown=[]) %}
             {% for tag in tags or [] %}
               {% set low = tag | lower %}
-              {% if not (tag | length == 4 and tag.isdigit()) and not low.startswith("event:") and not low.startswith("difficulty:") %}
+              {% if not (tag | length == 4 and tag.isdigit()) and not low.startswith("event:") and not low.startswith("difficulty:") and low not in ["beginner", "intermediate", "expert"] %}
                 {% set tag_ns.shown = tag_ns.shown + [tag] %}
               {% endif %}
             {% endfor %}

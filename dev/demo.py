@@ -2,20 +2,16 @@
 """Add FAKE demo data to the dev CTFd so every theme feature has something to show.
 
 Run after dev/setup.py and after installing challenges (e.g. `ctf challenge
-install` from the archive repo):
+install` from each challenge repo):
 
     python3 dev/demo.py
 
-It is idempotent and only touches the dev instance from dev/.env:
-  * tags challenges with a made-up `difficulty:` level (a hash of the name,
-    NOT a real rating) unless they already have one
-  * adds a few placeholder "Hack@UCF original" challenges (no year tag)
-  * creates player accounts and solves a spread of challenges so solve counts,
-    the solved state and per-event progress are visible
+It is idempotent and only touches the dev instance from dev/.env: it creates
+player accounts and solves a spread of challenges so solve counts, the solved
+state and per-event progress are visible.
 
 Player login: player / player-password-dev
 """
-import hashlib
 import json
 import random
 import sys
@@ -27,17 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from setup import Client  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-LEVELS = ["beginner", "easy", "medium", "hard", "insane"]
 PLAYERS = [("player", "player-password-dev")] + [(f"bot{i}", "bot-password-dev") for i in range(1, 9)]
-
-ORIGINALS = [
-    ("Welcome to Hack@UCF", "Misc", "difficulty:beginner", "Find the flag on this page: `hackucf{welcome}`", "hackucf{welcome}"),
-    ("Stack Basics", "Pwn", "difficulty:easy", "Placeholder original challenge for theme testing.", "hackucf{stack_basics}"),
-    ("Cookie Monster", "Web", "difficulty:easy", "Placeholder original challenge for theme testing.", "hackucf{cookies}"),
-    ("XOR Warmup", "Crypto", "difficulty:beginner", "Placeholder original challenge for theme testing.", "hackucf{xor}"),
-    ("Format Fiesta", "Pwn", "difficulty:medium", "Placeholder original challenge for theme testing.", "hackucf{fmt}"),
-    ("Packet Party", "Forensics", "difficulty:medium", "Placeholder original challenge for theme testing.", "hackucf{pcap}"),
-]
 
 
 def load_env():
@@ -64,39 +50,10 @@ class Admin:
             raise SystemExit(f"{method} {path}: HTTP {e.code} {e.read()[:300]!r}")
 
 
-def fake_level(name):
-    h = int(hashlib.sha256(name.encode()).hexdigest(), 16)
-    # Skew toward easy/medium like a real event
-    return LEVELS[[0, 1, 1, 2, 2, 2, 3, 3, 4][h % 9]]
-
-
 def main():
     env = load_env()
     url = env["CTFCLI_URL"]
     admin = Admin(url, env["CTFCLI_ACCESS_TOKEN"])
-
-    chals = admin.api("GET", "/challenges?view=admin&per_page=1000")["data"]
-    existing = {c["name"] for c in chals}
-
-    for name, category, tag, desc, flag in ORIGINALS:
-        if name in existing:
-            continue
-        c = admin.api("POST", "/challenges", {
-            "name": name, "category": category, "description": desc, "value": 100,
-            "type": "standard", "state": "visible",
-        })["data"]
-        admin.api("POST", "/flags", {"challenge": c["id"], "content": flag, "type": "static"})
-        admin.api("POST", "/tags", {"challenge": c["id"], "value": tag})
-        print(f"added original: {name}")
-
-    chals = admin.api("GET", "/challenges?view=admin&per_page=1000")["data"]
-    tagged = 0
-    for c in chals:
-        tags = admin.api("GET", f"/challenges/{c['id']}/tags")["data"]
-        if not any(t["value"].lower().startswith("difficulty:") for t in tags):
-            admin.api("POST", "/tags", {"challenge": c["id"], "value": f"difficulty:{fake_level(c['name'])}"})
-            tagged += 1
-    print(f"tagged {tagged} challenges with fake difficulty levels")
 
     flags = {}
     for f in admin.api("GET", "/flags")["data"]:

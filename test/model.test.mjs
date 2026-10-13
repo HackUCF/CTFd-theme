@@ -34,7 +34,7 @@ const raw = [
     value: 480,
     solves: 10,
     solved_by_me: false,
-    tags: [{ value: "2025" }, { value: "difficulty:easy" }],
+    tags: [{ value: "2025" }, { value: "Beginner" }],
   },
   {
     id: 3,
@@ -62,7 +62,7 @@ const raw = [
     value: 500,
     solves: 1,
     solved_by_me: false,
-    tags: [{ value: "2025" }, { value: "difficulty:insane" }],
+    tags: [{ value: "2025" }, { value: "difficulty:insane" }, { value: "expert" }],
   },
 ];
 const chals = raw.map(c => enrich(c, settings));
@@ -74,17 +74,18 @@ test("settings and parsing", () => {
     normalizeSettings({ originals_position: "bogus" }).originals_position,
     "last",
   );
-  assert.equal(parseDifficulty("HARD").level, 4);
-  assert.equal(parseDifficulty("5").key, "insane");
-  assert.equal(parseDifficulty("expert").key, "insane");
-  assert.equal(parseDifficulty("7"), null);
+  assert.equal(parseDifficulty("HARD").level, 3);
+  assert.equal(parseDifficulty("3").key, "expert");
+  assert.equal(parseDifficulty("medium").key, "intermediate");
+  assert.equal(parseDifficulty("4"), null);
 });
 
 test("enrich derives event, difficulty, category alias, display tags", () => {
   assert.equal(chals[0].eventKey, "2017");
   assert.equal(chals[0].eventLabel, "SunshineCTF 2017");
   assert.equal(chals[1].category, "Reversing");
-  assert.equal(chals[1].difficulty.key, "easy");
+  assert.equal(chals[1].difficulty.key, "beginner");
+  assert.deepEqual(chals[1].displayTags, []);
   assert.equal(chals[2].eventKey, ORIGINALS_KEY);
   assert.equal(chals[2].eventLabel, "Hack@UCF Originals");
   assert.deepEqual(chals[2].displayTags, ["heap"]);
@@ -167,7 +168,7 @@ test("grouping", () => {
   const byDiff = groupChallenges(chals, "difficulty");
   assert.deepEqual(
     byDiff.map(g => g.label),
-    ["Easy", "Insane", "Unrated"],
+    ["Beginner", "Intermediate", "Expert", "Unrated"],
   );
   assert.equal(groupChallenges(chals, "none")[0].challenges.length, 5);
 });
