@@ -9,6 +9,10 @@
 //                        ("beginner", "intermediate" or "expert")
 //   "difficulty:<level>" the same, also accepting a number 1-3 or an alias
 //                        ("easy", "hard", ...)
+//   "speedrun" / "i95"   a "mini" sub-category: the challenge keeps its real
+//                        CTFd category (e.g. Pwn) but is shown under its own
+//                        group, e.g. "Speedrun (Mini Pwn)", to mirror the
+//                        original SunshineCTF board.
 // A challenge with no year or event tag belongs to the "originals" event.
 // Tags consumed by these conventions are hidden from the tag chips.
 
@@ -30,6 +34,28 @@ const DIFFICULTY_ALIASES = {
   insane: 3,
   extreme: 3,
 };
+
+// Tags that pull a challenge into its own display category while leaving its
+// real CTFd category (usually Pwn) untouched. Key is the (lowercased) tag.
+export const MINI_CATEGORIES = {
+  speedrun: "Speedrun (Mini Pwn)",
+  i95: "I95 (Mini Pwn)",
+};
+
+// Default category ordering (used unless the admin sets a
+// challenge_category_order function). Listed categories come first in this
+// order; anything else (Speedrun/I95 mini-categories, Misc, Stego, Pegasus, ...)
+// follows, alphabetically. "RE" and "Reversing" are both ranked so either
+// naming sorts right after Pwn.
+export const DEFAULT_CATEGORY_ORDER = [
+  "Pwn",
+  "RE",
+  "Reversing",
+  "Web",
+  "Crypto",
+  "Forensics",
+  "Scripting",
+];
 
 export const ORIGINALS_KEY = "originals";
 export const ALL_KEY = "all";
@@ -130,6 +156,7 @@ export function enrich(chal, settings) {
   let year = null;
   let eventName = null;
   let difficulty = null;
+  let miniCategory = null;
   const tags = [];
 
   for (const raw of chal.tags || []) {
@@ -147,6 +174,8 @@ export function enrich(chal, settings) {
       difficulty = parseDifficulty(tag.slice(11)) || difficulty;
     } else if (DIFFICULTIES.some(d => d.key === lower)) {
       difficulty = parseDifficulty(lower);
+    } else if (MINI_CATEGORIES[lower]) {
+      miniCategory = MINI_CATEGORIES[lower];
     } else {
       tags.push(tag);
     }
@@ -165,13 +194,15 @@ export function enrich(chal, settings) {
     eventLabel = settings.originals_label;
   }
 
-  const category = str(chal.category) || "Uncategorized";
-  const aliased = settings.category_aliases[category];
+  const realCategory = str(chal.category) || "Uncategorized";
+  const aliased = settings.category_aliases[realCategory];
+  const baseCategory = aliased ? str(aliased) : realCategory;
+  const category = miniCategory || baseCategory;
 
   return {
     ...chal,
-    category: aliased ? str(aliased) : category,
-    originalCategory: category,
+    category,
+    originalCategory: realCategory,
     year,
     eventKey,
     eventLabel,
@@ -181,6 +212,7 @@ export function enrich(chal, settings) {
     searchText: [
       chal.name,
       category,
+      realCategory,
       aliased,
       eventLabel,
       difficulty && difficulty.label,
@@ -358,13 +390,22 @@ export function sortChallenges(challenges, sortKey) {
   return indexed.map(([c]) => c);
 }
 
+const CATEGORY_RANK = new Map(
+  DEFAULT_CATEGORY_ORDER.map((c, i) => [c.toLowerCase(), i]),
+);
+
+function categoryRank(name) {
+  const r = CATEGORY_RANK.get(str(name).toLowerCase());
+  return r === undefined ? DEFAULT_CATEGORY_ORDER.length : r;
+}
+
+export function defaultCategoryCompare(a, b) {
+  return categoryRank(a) - categoryRank(b) || collator.compare(a, b);
+}
+
 export function sortCategories(categories, compareFn) {
   const list = [...categories];
-  if (compareFn) {
-    list.sort(compareFn);
-  } else {
-    list.sort((a, b) => collator.compare(a, b));
-  }
+  list.sort(compareFn || defaultCategoryCompare);
   return list;
 }
 

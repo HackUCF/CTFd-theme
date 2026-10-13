@@ -12,6 +12,7 @@ import {
   normalizeSettings,
   parseAliases,
   parseDifficulty,
+  sortCategories,
   sortChallenges,
 } from "../assets/js/archive/model.js";
 
@@ -62,7 +63,11 @@ const raw = [
     value: 500,
     solves: 1,
     solved_by_me: false,
-    tags: [{ value: "sunshinectf-2025" }, { value: "difficulty:insane" }, { value: "expert" }],
+    tags: [
+      { value: "sunshinectf-2025" },
+      { value: "difficulty:insane" },
+      { value: "expert" },
+    ],
   },
 ];
 const chals = raw.map(c => enrich(c, settings));
@@ -92,7 +97,10 @@ test("enrich derives event, difficulty, category alias, display tags", () => {
   assert.equal(chals[3].eventLabel, "Hack@UCF Workshop");
   assert.equal(chals[3].locked, true);
   assert.deepEqual(chals[0].displayTags, []);
-  const caps = enrich({ id: 9, name: "x", tags: ["SunshineCTF-2019", "2018"] }, settings);
+  const caps = enrich(
+    { id: 9, name: "x", tags: ["SunshineCTF-2019", "2018"] },
+    settings,
+  );
   assert.equal(caps.eventKey, "2019");
   assert.deepEqual(caps.displayTags, ["2018"]);
 });
@@ -175,4 +183,60 @@ test("grouping", () => {
     ["Beginner", "Intermediate", "Expert", "Unrated"],
   );
   assert.equal(groupChallenges(chals, "none")[0].challenges.length, 5);
+});
+
+test("enrich pulls speedrun/i95 tags into a mini category", () => {
+  const sr = enrich(
+    {
+      id: 9,
+      name: "speedrun-03",
+      category: "Pwn",
+      tags: ["sunshinectf-2020", "beginner", "speedrun"],
+    },
+    settings,
+  );
+  assert.equal(sr.category, "Speedrun (Mini Pwn)");
+  assert.equal(sr.originalCategory, "Pwn");
+  assert.deepEqual(sr.displayTags, []); // speedrun/year/difficulty all consumed
+  const i95 = enrich(
+    {
+      id: 10,
+      name: "Miami",
+      category: "Pwn",
+      tags: ["sunshinectf-2025", "beginner", "i95"],
+    },
+    settings,
+  );
+  assert.equal(i95.category, "I95 (Mini Pwn)");
+  assert.equal(i95.originalCategory, "Pwn");
+});
+
+test("default category order: Pwn, RE/Reversing, Web, Crypto, Forensics, Scripting, then rest", () => {
+  const cats = [
+    "Misc",
+    "Web",
+    "Pwn",
+    "Scripting",
+    "Reversing",
+    "Forensics",
+    "Crypto",
+    "Speedrun (Mini Pwn)",
+    "I95 (Mini Pwn)",
+    "Stego",
+  ];
+  assert.deepEqual(sortCategories(cats), [
+    "Pwn",
+    "Reversing",
+    "Web",
+    "Crypto",
+    "Forensics",
+    "Scripting",
+    // the rest, alphabetical:
+    "I95 (Mini Pwn)",
+    "Misc",
+    "Speedrun (Mini Pwn)",
+    "Stego",
+  ]);
+  // "RE" sorts in the same slot as "Reversing" (right after Pwn)
+  assert.deepEqual(sortCategories(["Web", "RE", "Pwn"]), ["Pwn", "RE", "Web"]);
 });

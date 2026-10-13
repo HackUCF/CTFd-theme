@@ -72,7 +72,7 @@
             {% set tag_ns = namespace(shown=[]) %}
             {% for tag in tags or [] %}
               {% set low = tag | lower %}
-              {% if not (low.startswith("sunshinectf-") and low[12:] | length == 4 and low[12:].isdigit()) and not low.startswith("event:") and not low.startswith("difficulty:") and low not in ["beginner", "intermediate", "expert"] %}
+              {% if not (low.startswith("sunshinectf-") and low[12:] | length == 4 and low[12:].isdigit()) and not low.startswith("event:") and not low.startswith("difficulty:") and low not in ["beginner", "intermediate", "expert", "speedrun", "i95"] %}
                 {% set tag_ns.shown = tag_ns.shown + [tag] %}
               {% endif %}
             {% endfor %}
