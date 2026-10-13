@@ -3,7 +3,7 @@
 // plain node (see test/model.test.mjs).
 //
 // Tag conventions (all optional):
-//   "2017"               event = event_name_template with {year} = 2017
+//   "sunshinectf-2017"   event = event_name_template with {year} = 2017
 //   "event:<name>"       event = <name> (overrides a year tag for the label)
 //   "<level>"            difficulty, where <level> is a key in DIFFICULTIES
 //                        ("beginner", "intermediate" or "expert")
@@ -42,7 +42,7 @@ export const DEFAULT_SETTINGS = {
   category_aliases: {},
 };
 
-const YEAR_RE = /^(19|20)\d\d$/;
+const YEAR_RE = /^sunshinectf-((?:19|20)\d\d)$/i;
 
 function str(value) {
   return value === undefined || value === null ? "" : String(value).trim();
@@ -138,8 +138,9 @@ export function enrich(chal, settings) {
       continue;
     }
     const lower = tag.toLowerCase();
-    if (YEAR_RE.test(tag)) {
-      year = Math.max(year || 0, Number(tag));
+    const yearMatch = YEAR_RE.exec(tag);
+    if (yearMatch) {
+      year = Math.max(year || 0, Number(yearMatch[1]));
     } else if (lower.startsWith("event:")) {
       eventName = tag.slice(6).trim() || eventName;
     } else if (lower.startsWith("difficulty:")) {

@@ -30,14 +30,14 @@ is needed:
 
 | Tag | Meaning |
 | --- | --- |
-| `2019` | Belongs to event "SunshineCTF 2019". The name template is a theme setting. |
+| `sunshinectf-2019` | Belongs to event "SunshineCTF 2019". The name template is a theme setting. |
 | `event:<name>` | Belongs to the event `<name>`, which also gets its own tab. Use this for events that aren't a SunshineCTF year. |
 | `beginner`, `intermediate`, `expert` | Difficulty. `difficulty:<level>` also works, with `1`-`3` or an alias like `easy`, `medium` or `hard`. Difficulty filters appear once any challenge has one. |
-| *(no year or `event:` tag)* | Goes to the "Hack@UCF Originals" tab. |
+| *(no `sunshinectf-YYYY` or `event:` tag)* | Goes to the "Hack@UCF Originals" tab. |
 
 The challenge cards and modal hide these tags. Any other tags show as normal
-tags. The SunshineCTF archive's `challenge.yml` files already carry the year
-tag and a `beginner`, `intermediate` or `expert` tag, as do the Hack@UCF
+tags. The SunshineCTF archive's `challenge.yml` files already carry the
+`sunshinectf-YYYY` tag and a `beginner`, `intermediate` or `expert` tag, as do the Hack@UCF
 originals.
 
 ## Theme settings
@@ -45,7 +45,7 @@ originals.
 Set these in CTFd at Admin → Config → Theme → Theme Settings. The core theme's
 settings still work.
 
-- **Event Name Template:** label for year tags, where `{year}` is replaced.
+- **Event Name Template:** label for `sunshinectf-YYYY` tags, where `{year}` is replaced.
   Default: `SunshineCTF {year}`.
 - **Originals Label:** default `Hack@UCF Originals`.
 - **Event Tab Order:** newest or oldest first.

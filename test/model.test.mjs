@@ -25,7 +25,7 @@ const raw = [
     value: 500,
     solves: 3,
     solved_by_me: true,
-    tags: [{ value: "2017" }],
+    tags: [{ value: "sunshinectf-2017" }],
   },
   {
     id: 2,
@@ -34,7 +34,7 @@ const raw = [
     value: 480,
     solves: 10,
     solved_by_me: false,
-    tags: [{ value: "2025" }, { value: "Beginner" }],
+    tags: [{ value: "sunshinectf-2025" }, { value: "Beginner" }],
   },
   {
     id: 3,
@@ -62,7 +62,7 @@ const raw = [
     value: 500,
     solves: 1,
     solved_by_me: false,
-    tags: [{ value: "2025" }, { value: "difficulty:insane" }, { value: "expert" }],
+    tags: [{ value: "sunshinectf-2025" }, { value: "difficulty:insane" }, { value: "expert" }],
   },
 ];
 const chals = raw.map(c => enrich(c, settings));
@@ -91,6 +91,10 @@ test("enrich derives event, difficulty, category alias, display tags", () => {
   assert.deepEqual(chals[2].displayTags, ["heap"]);
   assert.equal(chals[3].eventLabel, "Hack@UCF Workshop");
   assert.equal(chals[3].locked, true);
+  assert.deepEqual(chals[0].displayTags, []);
+  const caps = enrich({ id: 9, name: "x", tags: ["SunshineCTF-2019", "2018"] }, settings);
+  assert.equal(caps.eventKey, "2019");
+  assert.deepEqual(caps.displayTags, ["2018"]);
 });
 
 test("events are ordered newest first with originals last", () => {
