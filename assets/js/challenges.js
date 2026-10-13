@@ -6,6 +6,7 @@ import { Modal, Tab, Tooltip } from "bootstrap";
 import highlight from "./theme/highlight";
 import { intl } from "./theme/times";
 import ChallengeBrowser from "./archive/browser";
+import { extractHandouts } from "./archive/handouts";
 import { addTargetBlank } from "./utils/links";
 
 window.Alpine = Alpine;
@@ -72,10 +73,8 @@ Alpine.data("Challenge", () => ({
   selectedRating: 0,
   ratingReview: "",
   ratingSubmitted: false,
-
-  async init() {
-    highlight();
-  },
+  // Handout links lifted out of the description (see archive/handouts.js)
+  handouts: [],
 
   getStyles() {
     let styles = {
@@ -106,6 +105,9 @@ Alpine.data("Challenge", () => ({
 
   async init() {
     highlight();
+    this.$nextTick(() => {
+      this.handouts = extractHandouts(this.$refs.description, window.location.origin);
+    });
   },
 
   async showChallenge() {

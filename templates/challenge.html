@@ -106,7 +106,7 @@
             </small>
             {% endif %}
 
-            <span class="challenge-desc">{% block description %}{{ challenge.html }}{% endblock %}</span>
+            <span class="challenge-desc" x-ref="description">{% block description %}{{ challenge.html }}{% endblock %}</span>
 
             {% if challenge.connection_info %}
               <div class="mb-2">
@@ -150,8 +150,8 @@
               </div>
             {% endif %}
 
-            {% if files %}
-              <div class="row challenge-files text-center pb-3">
+            {# Uploaded files, plus handout links lifted out of the description #}
+            <div class="row challenge-files text-center pb-3"{% if not files %} x-show="handouts.length" x-cloak{% endif %}>
                 {% for file in files %}
                   <div class="col-md-4 col-sm-4 col-xs-12 file-button-wrapper d-block">
                     {% set segments = file.split('/') %}
@@ -173,8 +173,19 @@
                     </a>
                   </div>
                 {% endfor %}
+                <template x-for="handout in handouts" :key="handout.href">
+                  <div class="col-md-4 col-sm-4 col-xs-12 file-button-wrapper d-block">
+                    <a
+                        class="btn btn-info btn-file mb-1 d-inline-block px-2 w-100 text-truncate"
+                        :href="handout.href"
+                        :title="handout.name"
+                    >
+                      <i class="fas fa-download"></i>
+                      <small x-text="handout.name"></small>
+                    </a>
+                  </div>
+                </template>
               </div>
-            {% endif %}
 
             <template x-if="max_attempts > 0">
               <p class="text-center">

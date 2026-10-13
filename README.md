@@ -36,9 +36,21 @@ is needed:
 | *(no `sunshinectf-YYYY` or `event:` tag)* | Goes to the "Hack@UCF Originals" tab. |
 
 The challenge cards and modal hide these tags. Any other tags show as normal
-tags. The SunshineCTF archive's `challenge.yml` files already carry the
-`sunshinectf-YYYY` tag and a `beginner`, `intermediate` or `expert` tag, as do the Hack@UCF
-originals.
+tags. The SunshineCTF archive's `challenge.yml` files carry the
+`sunshinectf-YYYY` tag, and every challenge there and in the Hack@UCF originals
+has a `beginner`, `intermediate` or `expert` tag.
+
+Descriptions can also list handouts that the web server hosts outside CTFd, as
+Markdown list items holding only a link under `/files/` on the same site:
+
+```markdown
+* [rot13](/files/sun/18/Pwn/Rot13/rot13)
+```
+
+The challenge modal moves those items out of the description and shows them as
+file buttons, like uploaded files. The dev compose file's `files` profile adds
+an nginx front on port 8080 that serves them from the workspace's
+`publish/challenges`, like production.
 
 ## Theme settings
 
