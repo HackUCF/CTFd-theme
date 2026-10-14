@@ -185,7 +185,7 @@ test("grouping", () => {
   assert.equal(groupChallenges(chals, "none")[0].challenges.length, 5);
 });
 
-test("enrich pulls speedrun/i95 tags into a mini category", () => {
+test("enrich pulls speedrun/i95 tags into the shared mini-pwn category", () => {
   const sr = enrich(
     {
       id: 9,
@@ -195,7 +195,7 @@ test("enrich pulls speedrun/i95 tags into a mini category", () => {
     },
     settings,
   );
-  assert.equal(sr.category, "Speedrun (Mini Pwn)");
+  assert.equal(sr.category, "Speedrun/I95 (Mini Pwn)");
   assert.equal(sr.originalCategory, "Pwn");
   assert.deepEqual(sr.displayTags, []); // speedrun/year/difficulty all consumed
   const i95 = enrich(
@@ -207,7 +207,8 @@ test("enrich pulls speedrun/i95 tags into a mini category", () => {
     },
     settings,
   );
-  assert.equal(i95.category, "I95 (Mini Pwn)");
+  // Both tags land in the same group, so the board shows one mini-pwn column
+  assert.equal(i95.category, sr.category);
   assert.equal(i95.originalCategory, "Pwn");
 });
 
@@ -220,15 +221,13 @@ test("default category order: Pwn, mini-pwn, RE/Reversing, Web, Crypto, Forensic
     "Reversing",
     "Forensics",
     "Crypto",
-    "Speedrun (Mini Pwn)",
-    "I95 (Mini Pwn)",
+    "Speedrun/I95 (Mini Pwn)",
     "Stego",
   ];
   assert.deepEqual(sortCategories(cats), [
     "Pwn",
-    // mini-pwn categories rank right after Pwn
-    "Speedrun (Mini Pwn)",
-    "I95 (Mini Pwn)",
+    // the mini-pwn category ranks right after Pwn
+    "Speedrun/I95 (Mini Pwn)",
     "Reversing",
     "Web",
     "Crypto",

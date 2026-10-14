@@ -34,7 +34,7 @@ is needed:
 | `event:<name>` | Belongs to the event `<name>`, which also gets its own tab. Use this for events that aren't a SunshineCTF year. |
 | `beginner`, `intermediate`, `expert` | Difficulty. `difficulty:<level>` also works, with `1`-`3` or an alias like `easy`, `medium` or `hard`. Difficulty filters appear once any challenge has one. |
 | *(no `sunshinectf-YYYY` or `event:` tag)* | Goes to the "Hack@UCF Originals" tab. |
-| `speedrun` / `i95` | A "mini" sub-category. The challenge keeps its real CTFd category (Pwn) but is shown in its own group — "Speedrun (Mini Pwn)" / "I95 (Mini Pwn)" — to mirror the original SunshineCTF board. Hidden from the tag chips. |
+| `speedrun` / `i95` | The "mini pwn" sub-category. The challenge keeps its real CTFd category (Pwn) but is shown in the shared "Speedrun/I95 (Mini Pwn)" group — the series was called Speedrun through 2023 and I95 since 2024 — to mirror the original SunshineCTF boards. Hidden from the tag chips. |
 
 The challenge cards and modal hide these tags. Any other tags show as normal
 tags. The SunshineCTF archive's `challenge.yml` files carry the

@@ -9,10 +9,11 @@
 //                        ("beginner", "intermediate" or "expert")
 //   "difficulty:<level>" the same, also accepting a number 1-3 or an alias
 //                        ("easy", "hard", ...)
-//   "speedrun" / "i95"   a "mini" sub-category: the challenge keeps its real
-//                        CTFd category (e.g. Pwn) but is shown under its own
-//                        group, e.g. "Speedrun (Mini Pwn)", to mirror the
-//                        original SunshineCTF board.
+//   "speedrun" / "i95"   the "mini pwn" sub-category: the challenge keeps its
+//                        real CTFd category (e.g. Pwn) but is shown under the
+//                        shared "Speedrun/I95 (Mini Pwn)" group, mirroring
+//                        the original SunshineCTF boards (the series was
+//                        called Speedrun through 2023 and I95 since 2024).
 // A challenge with no year or event tag belongs to the "originals" event.
 // Tags consumed by these conventions are hidden from the tag chips.
 
@@ -35,22 +36,24 @@ const DIFFICULTY_ALIASES = {
   extreme: 3,
 };
 
-// Tags that pull a challenge into its own display category while leaving its
-// real CTFd category (usually Pwn) untouched. Key is the (lowercased) tag.
+// Tags that pull a challenge into a display category of their own while
+// leaving its real CTFd category (usually Pwn) untouched. Key is the
+// (lowercased) tag; several tags may share one display category.
+export const MINI_PWN_CATEGORY = "Speedrun/I95 (Mini Pwn)";
 export const MINI_CATEGORIES = {
-  speedrun: "Speedrun (Mini Pwn)",
-  i95: "I95 (Mini Pwn)",
+  speedrun: MINI_PWN_CATEGORY,
+  i95: MINI_PWN_CATEGORY,
 };
 
 // Default category ordering (used unless the admin sets a
 // challenge_category_order function). Listed categories come first in this
-// order; anything else (Speedrun/I95 mini-categories, Misc, Stego, Pegasus, ...)
-// follows, alphabetically. "RE" and "Reversing" are both ranked so either
-// naming sorts right after Pwn.
+// order; anything else (Misc, Stego, Pegasus, ...) follows, alphabetically.
+// "RE" and "Reversing" are both ranked so either naming sorts right after the
+// pwn categories.
 export const DEFAULT_CATEGORY_ORDER = [
   "Pwn",
-  // mini-pwn sub-categories sort immediately after Pwn
-  ...Object.values(MINI_CATEGORIES),
+  // mini-pwn sub-category sorts immediately after Pwn
+  ...new Set(Object.values(MINI_CATEGORIES)),
   "RE",
   "Reversing",
   "Web",
